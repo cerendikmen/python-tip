@@ -23,6 +23,9 @@ class Hashtag(models.Model):
     text_lower = models.CharField(max_length=280, primary_key=True)
     count = models.IntegerField(default=0)
 
+    class Meta:
+        ordering = ["-count"]
+
     def __str__(self):
         return self.text_lower
 
