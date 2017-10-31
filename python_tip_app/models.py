@@ -3,7 +3,6 @@ from django.db import models
 # Create your models here.
 
 class CommonInfo(models.Model):
-    twitter_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=20)
     screen_name = models.CharField(max_length=15)
 
@@ -14,10 +13,12 @@ class CommonInfo(models.Model):
         return self.screen_name
 
 class PostedBy(CommonInfo):
+    twitter_id = models.BigIntegerField(unique=True)
     created_at = models.DateTimeField()
 
 class Mention(CommonInfo):
-    in_reply_to_status_id = models.IntegerField()
+    twitter_id = models.BigIntegerField()
+    in_reply_to_status_id = models.BigIntegerField(null=True)
 
 class Hashtag(models.Model):
     text_lower = models.CharField(max_length=280, primary_key=True)
@@ -38,18 +39,18 @@ class Url(models.Model):
         return self.url
 
 class Tip(models.Model):
-    twitter_id = models.IntegerField(primary_key=True)
+    twitter_id = models.BigIntegerField(unique=True)
     timestamp = models.DateTimeField()
     text = models.CharField(max_length=280)
     retweet_count = models.IntegerField(default=0)
-    favourite_count = models.IntegerField(default=0)
+    favorite_count = models.IntegerField(default=0)
     posted_by = models.ForeignKey(PostedBy, on_delete=models.CASCADE)
     urls = models.ManyToManyField(Url, null=True, blank=True)
     hashtags = models.ManyToManyField(Hashtag, null=True, blank=True)
     mentions = models.ManyToManyField(Mention, null=True, blank=True)
 
     class Meta:
-        ordering = ["-favourite_count", "-retweet_count"]
+        ordering = ["-favorite_count", "-retweet_count"]
 
     def __str__(self):
         return self.text

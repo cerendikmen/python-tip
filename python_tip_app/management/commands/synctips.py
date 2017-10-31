@@ -1,14 +1,53 @@
 import tweepy
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Max
 from python_tip_app.models import *
 
 import os
+import datetime
 
 CONSUMER_KEY = os.getenv("TWITTER_CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv("TWITTER_CONSUMER_SECRET")
 ACCESS_TOKEN = os.getenv("TWITTER_ACCESS_TOKEN")
 ACCESS_TOKEN_SECRET = os.getenv("TWITTER_ACCESS_TOKEN_SECRET")
+PYTHON_TIP_ID = os.getenv("TWITTER_PYTHON_TIP_ID")
+
+def local_to_utc(local_dt, utc_offset):
+    return local_dt - datetime.timedelta(seconds=utc_offset)
+
+def process_status(status):
+    author = status.author
+    created_at = local_to_utc(author.created_at, author.utc_offset)
+    posted_by, created = PostedBy.objects.get_or_create(twitter_id=author.id, name=author.name, screen_name=author.screen_name, created_at=created_at)
+    tip = Tip(twitter_id=status.id, timestamp=status.created_at, text=status.text,
+            retweet_count=status.retweet_count, favorite_count=status.favorite_count,
+            posted_by=posted_by)
+    tip.save()
+    urls = status.entities['urls']
+    hashtags = status.entities['hashtags']
+    mentions = status.entities['user_mentions']
+    if urls:
+        for u in urls:
+            url = Url(url=u.get('url'), expanded_url=u.get('expanded_url'), display_url=u.get('display_url'))
+            url.save()
+            tip.urls.add(url)
+    if hashtags:
+        for h in hashtags:
+            try:
+                if 'text' in h:
+                    hashtag, created = Hashtag.objects.get_or_create(text_lower=h['text'].lower())
+                if not created:
+                    hashtag.count += 1
+                    hashtag.save()
+                    tip.hashtags.add(hashtag)
+            except  Hashtag.MultipleObjectsReturned:
+                print("There are multiple hashtags with the same text.")
+    if mentions:
+        for m in mentions:
+            mention = Mention(twitter_id=m.get('id'), name=m.get('name'), screen_name=m.get('screen_name'), in_reply_to_status_id=status.in_reply_to_status_id)
+            mention.save()
+            tip.mentions.add(mention)
 
 class Command(BaseCommand):
     help = 'Syncs the published tips to a DB from python_tip Twitter account using a wrapper called Tweepy.'
@@ -18,3 +57,10 @@ class Command(BaseCommand):
         auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
         api = tweepy.API(auth)
+        result = Tip.objects.aggregate(max_id=Max('twitter_id'))
+        if result['max_id']:
+            cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID, since_id=result.get('max_id'))
+        else:
+            cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID)
+        for status in cursor.items():
+            process_status(status)
