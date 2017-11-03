@@ -36,7 +36,7 @@ class Url(models.Model):
     display_url = models.CharField(max_length=280)
 
     def __str__(self):
-        return self.url
+        return self.display_url
 
 class Tip(models.Model):
     twitter_id = models.BigIntegerField(unique=True)
