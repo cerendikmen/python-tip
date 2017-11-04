@@ -6,6 +6,7 @@ from python_tip_app.models import *
 
 import os
 import datetime
+import html
 
 CONSUMER_KEY = os.getenv("TWITTER_CONSUMER_KEY")
 CONSUMER_SECRET = os.getenv("TWITTER_CONSUMER_SECRET")
@@ -23,7 +24,8 @@ def process_status(status):
     posted_by, created = PostedBy.objects.get_or_create(twitter_id=author.id, name=author.name, screen_name=author.screen_name, created_at=created_at)
 
     # Creates tip with the relevant fields provided by status
-    tip = Tip(twitter_id=status.id, timestamp=status.created_at, text=status.text,
+    text = html.unescape(status.text)
+    tip = Tip(twitter_id=status.id, timestamp=status.created_at, text=text,
             retweet_count=status.retweet_count, favorite_count=status.favorite_count,
             posted_by=posted_by)
     tip.save()
@@ -66,7 +68,7 @@ class Command(BaseCommand):
         api = tweepy.API(auth)
         result = Tip.objects.aggregate(max_id=Max('twitter_id'))
         if result['max_id']:
-            cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID, since_id=result.get('max_id'))
+            cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID, since_id=result.get('max_id'), exclude_replies=True, include_rts=False)
         else:
             cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID)
         for status in cursor.items():

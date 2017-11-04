@@ -23,6 +23,7 @@ class TipAdmin(admin.ModelAdmin):
     search_fields = ['^=hashtags__text_lower']
     filter_horizontal = ('hashtags', 'urls', 'mentions')
 
+    # methods to display many to many fields as a column
     def get_tip_urls(self, obj):
         return ','.join([u.display_url for u in obj.urls.all()])
     get_tip_urls.short_description = 'urls'
