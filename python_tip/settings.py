@@ -79,7 +79,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'python_tip',
-        'USER' : 'scorebeyond',
+        'USER' : 'user',
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',

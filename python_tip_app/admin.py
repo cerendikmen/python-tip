@@ -25,15 +25,15 @@ class TipAdmin(admin.ModelAdmin):
 
     def get_tip_urls(self, obj):
         return ','.join([u.display_url for u in obj.urls.all()])
-    get_tip_urls.short_descripton = 'urls'
+    get_tip_urls.short_description = 'urls'
 
     def get_hashtags(self, obj):
         return ','.join([h.text_lower for h in obj.hashtags.all()])
-    get_hashtags.short_descripton = 'hashtags'
-    
+    get_hashtags.short_description = 'hashtags'
+
     def get_mentions(self, obj):
         return ','.join([m.screen_name for m in obj.mentions.all()])
-    get_mentions.short_descripton = 'mentions'
+    get_mentions.short_description = 'mentions'
 
 admin.site.register(PostedBy, PostedByAdmin)
 admin.site.register(Mention, MentionAdmin)
