@@ -1,10 +1,9 @@
 from django.db import models
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.contrib.postgres.aggregates import StringAgg
-
+from django.contrib.postgres.indexes import GinIndex
 
 # Create your models here.
-
 class TipManager(models.Manager):
     def with_documents(self):
         vector = (SearchVector('text', weight='A') +
@@ -63,6 +62,7 @@ class Tip(models.Model):
 
     class Meta:
         ordering = ["-favorite_count", "-retweet_count"]
+        indexes = [GinIndex(fields=['search_vector'])]
 
     def __str__(self):
         return self.text
