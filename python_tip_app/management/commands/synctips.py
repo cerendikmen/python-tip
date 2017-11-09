@@ -29,7 +29,6 @@ def process_status(status):
             retweet_count=status.retweet_count, favorite_count=status.favorite_count,
             posted_by=posted_by)
     tip.save()
-
     # Gets urls, hashtags and mentions if exist in the tweet aka status
     urls = status.entities['urls']
     hashtags = status.entities['hashtags']
@@ -66,10 +65,15 @@ class Command(BaseCommand):
         auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
         api = tweepy.API(auth)
+        dic =   {
+                    'id' : PYTHON_TIP_ID,
+                    'exclude_replies' : True,
+                    'include_rts' : False
+                }
         result = Tip.objects.aggregate(max_id=Max('twitter_id'))
         if result['max_id']:
-            cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID, since_id=result.get('max_id'), exclude_replies=True, include_rts=False)
-        else:
-            cursor = tweepy.Cursor(api.user_timeline, id=PYTHON_TIP_ID)
+            print("result max id var: ", result['max_id'])
+            dic['since_id'] = result['max_id']
+        cursor = tweepy.Cursor(api.user_timeline, **dic)
         for status in cursor.items():
             process_status(status)

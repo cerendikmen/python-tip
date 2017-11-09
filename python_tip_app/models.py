@@ -1,6 +1,16 @@
 from django.db import models
+from django.contrib.postgres.search import SearchVector, SearchVectorField
+from django.contrib.postgres.aggregates import StringAgg
+
 
 # Create your models here.
+
+class TipManager(models.Manager):
+    def with_documents(self):
+        vector = (SearchVector('text', weight='A') +
+                    SearchVector(StringAgg('hashtags__text_lower', delimiter=' '), weight='A') +
+                    SearchVector(StringAgg('urls__expanded_url', delimiter=' '), weight='B'))
+        return self.get_queryset().annotate(document=vector)
 
 class CommonInfo(models.Model):
     name = models.CharField(max_length=20)
@@ -48,9 +58,17 @@ class Tip(models.Model):
     urls = models.ManyToManyField(Url, null=True, blank=True)
     hashtags = models.ManyToManyField(Hashtag, null=True, blank=True)
     mentions = models.ManyToManyField(Mention, null=True, blank=True)
+    search_vector = SearchVectorField(null=True)
+    objects = TipManager()
 
     class Meta:
         ordering = ["-favorite_count", "-retweet_count"]
 
     def __str__(self):
         return self.text
+
+    def save(self, *args, **kwargs):
+        super().save( *args, *kwargs)
+        if 'update_fields' not in kwargs or 'search_vector' not in kwargs['update_fields']:
+            instance = self._meta.default_manager.with_documents().filter(pk=self.pk)
+            instance.update(search_vector=instance[0].document)

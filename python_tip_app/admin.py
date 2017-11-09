@@ -17,7 +17,7 @@ class UrlAdmin(admin.ModelAdmin):
 
 class TipAdmin(admin.ModelAdmin):
     list_display = ('timestamp', 'text', 'retweet_count', 'favorite_count',
-                'posted_by', 'get_tip_urls', 'get_hashtags', 'get_mentions')
+                'posted_by', 'get_tip_urls', 'get_hashtags', 'get_mentions', 'search_vector')
     date_hierarchy = 'timestamp'
     list_filter = ('timestamp', 'hashtags')
     search_fields = ['^=hashtags__text_lower']
