@@ -10,7 +10,7 @@ import functools
 import operator
 
 from .models import *
-from .serializers import TipSerializer
+from .serializers import TipSerializer, HashtagSerializer
 
 # Create your views here.
 
@@ -26,4 +26,12 @@ class FullTextSearch(APIView):
 
 class MostFavTweets(ListAPIView):
     serializer_class = TipSerializer
-    queryset =  Tip.top5_fav_objects.all()
+    queryset =  Tip.top_five_fav_objects.all()
+
+class MostRetweetedTweets(ListAPIView):
+    serializer_class = TipSerializer
+    queryset =  Tip.top_five_retweeted_objects.all()
+
+class TopFiveHashtags(ListAPIView):
+    serializer_class = HashtagSerializer
+    queryset = Hashtag.top_five_objects.all()

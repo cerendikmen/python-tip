@@ -10,10 +10,18 @@ class TipManager(models.Manager):
                     SearchVector(StringAgg('hashtags__text_lower', delimiter=' '), weight='A') +
                     SearchVector(StringAgg('urls__expanded_url', delimiter=' '), weight='B'))
         return self.get_queryset().annotate(document=vector)
-    
+
+class TopFiveRetweetedTipManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-retweet_count')[:5]
+
 class TopFiveFavTipManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-favorite_count')[:5]
+
+class TopFiveHashtagManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('-count')[:5]
 
 class CommonInfo(models.Model):
     name = models.CharField(max_length=20)
@@ -36,6 +44,7 @@ class Mention(CommonInfo):
 class Hashtag(models.Model):
     text_lower = models.CharField(max_length=280, primary_key=True)
     count = models.IntegerField(default=0)
+    top_five_objects = TopFiveHashtagManager()
 
     class Meta:
         ordering = ["-count"]
@@ -63,7 +72,8 @@ class Tip(models.Model):
     mentions = models.ManyToManyField(Mention, null=True, blank=True)
     search_vector = SearchVectorField(null=True)
     objects = TipManager()
-    top5_fav_objects = TopFiveFavTipManager()
+    top_five_fav_objects = TopFiveFavTipManager()
+    top_five_retweeted_objects = TopFiveRetweetedTipManager()
 
     class Meta:
         ordering = ["-favorite_count", "-retweet_count"]
