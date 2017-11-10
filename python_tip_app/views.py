@@ -32,6 +32,10 @@ class MostRetweetedTweets(ListAPIView):
     serializer_class = TipSerializer
     queryset =  Tip.top_five_retweeted_objects.all()
 
+class WeeklyTweets(ListAPIView):
+    serializer_class = TipSerializer
+    queryset =  Tip.weekly_objects.all()
+
 class TopFiveHashtags(ListAPIView):
     serializer_class = HashtagSerializer
     queryset = Hashtag.top_five_objects.all()

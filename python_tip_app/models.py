@@ -3,6 +3,8 @@ from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.contrib.postgres.aggregates import StringAgg
 from django.contrib.postgres.indexes import GinIndex
 
+import datetime
+
 # Create your models here.
 class TipManager(models.Manager):
     def with_documents(self):
@@ -18,6 +20,12 @@ class TopFiveRetweetedTipManager(models.Manager):
 class TopFiveFavTipManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().order_by('-favorite_count')[:5]
+
+class WeeklyTipManager(models.Manager):
+    def get_queryset(self):
+        today = datetime.date.today()
+        last_week = today- datetime.timedelta(days=7)
+        return super().get_queryset().filter(timestamp__range=[last_week, today]).order_by('-timestamp')
 
 class TopFiveHashtagManager(models.Manager):
     def get_queryset(self):
@@ -74,6 +82,7 @@ class Tip(models.Model):
     objects = TipManager()
     top_five_fav_objects = TopFiveFavTipManager()
     top_five_retweeted_objects = TopFiveRetweetedTipManager()
+    weekly_objects = WeeklyTipManager()
 
     class Meta:
         ordering = ["-favorite_count", "-retweet_count"]

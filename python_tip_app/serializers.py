@@ -4,7 +4,7 @@ from .models import Tip, Hashtag
 class TipSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Tip
-		fields = ('text', 'retweet_count', 'favorite_count')
+		fields = ('text', 'timestamp', 'retweet_count', 'favorite_count')
 
 class HashtagSerializer(serializers.ModelSerializer):
 	class Meta:
