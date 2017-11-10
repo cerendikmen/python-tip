@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
 from django.db.models import F
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.contrib.postgres.aggregates import StringAgg
@@ -22,3 +23,7 @@ class FullTextSearch(APIView):
                     .filter(search_vector=query).order_by('-rank'))
         tweets = TipSerializer(queryset, many=True)
         return Response(tweets.data)
+
+class MostFavTweets(ListAPIView):
+    serializer_class = TipSerializer
+    queryset =  Tip.top5_fav_objects.all()
