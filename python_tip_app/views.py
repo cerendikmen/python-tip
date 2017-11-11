@@ -39,3 +39,11 @@ class WeeklyTweets(ListAPIView):
 class TopFiveHashtags(ListAPIView):
     serializer_class = HashtagSerializer
     queryset = Hashtag.top_five_objects.all()
+
+class HelloReact(APIView):
+	"""
+	API endpoint for listing the identifier, description and the price of
+	the specified Product object.
+	"""
+	def get(self, request, format=None):
+		return render(request, 'index.html')

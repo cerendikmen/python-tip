@@ -7,6 +7,12 @@ __pycache__/
 migrations/
 db.sqlite3
 
-# Other unwanted stuff
+# node.js
+node_modules/
+
+# webpack
+react/bundles
+
+# OSX
 .DS_Store
 .DS_STORE

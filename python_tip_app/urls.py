@@ -7,4 +7,5 @@ urlpatterns = [
 	url(r'^toprts/', views.MostRetweetedTweets.as_view()),
 	url(r'^weekly/', views.WeeklyTweets.as_view()),
 	url(r'^tophashtags/', views.TopFiveHashtags.as_view()),
+	url(r'^helloreact/', views.HelloReact.as_view()),
 ]
